@@ -1,0 +1,7 @@
+# npm dépendance
+/node_modules
+
+# environnement
+.env
+desktop.ini
+botconfig.js
