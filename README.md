@@ -1,5 +1,5 @@
-# AxeBot
-Ceci est le repository officiel du bot AxeBot. 
+# WizzyBot
+Ceci est le repository officiel du bot WizzyBot. 
 # Fichiers principaux
 main.js - Fichier de lancement du bot (lance avec un sharding)
 
