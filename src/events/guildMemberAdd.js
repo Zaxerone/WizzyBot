@@ -1,20 +1,35 @@
-"use strict";
+'use strict';
+const event = require('./../plugin/Event');
 
-const msgResolver = require("./../Resolver/Replaces");
-
-module.exports = async (client, member) => {
-  const settings = await client.getGuild(member.guild);
-  if (settings.welcomeChannel === null) return false;
-  const channel = member.guild.channels.find(
-    channel =>
-      channel.name == settings.welcomeChannel ||
-      channel.id == settings.welcomeChannel
-  );
-  if (!channel) return false;
-
-  const resolved = await msgResolver(settings.welcomeMessage, {
-    member: member
-  });
-
-  channel.send(resolved);
+/**
+ * Event GuildMemberAdd
+ */
+module.exports = class GuildMemberAdd extends event {
+  /**
+   * @param {Client} client - Client
+   */
+  constructor(client) {
+    super(client, {
+      name: 'guildMemberAdd',
+      enable: true,
+      filename: __filename,
+    });
+    this.client = client;
+  };
+  /**
+    * Launch script
+    * @param {GuildMember} member
+    */
+  async launch(member) {
+    if (!member) return;
+    /**
+     * Send event
+     */
+    this.client.coreExchange.emit('memberCount',
+        // eslint-disable-next-line max-len
+        await this.client.shard.broadcastEval('this.guilds.cache.reduce((prev, guild) => prev + guild.memberCount, 0)')
+            .then((results) =>
+              results.reduce((prev, memberCount) => prev + memberCount, 0),
+            ));
+  };
 };

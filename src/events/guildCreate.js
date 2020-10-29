@@ -1,34 +1,54 @@
-"use strict";
+'use strict';
+const event = require('./../plugin/Event');
 
-module.exports = async (client, guild) => {
-  const newGuild = {
-    guildID: guild.id,
-    guildName: guild.name
-  };
-
-  await client.createGuild(newGuild);
-
-  await client.user.setActivity(`${guild.name} a ajouté le bot!`, {
-    type: "WATCHING"
-  });
-
-  const support = client.guilds.get("770686144152338492");
-  const channel = support.channels.find(ch => ch.name == "guild-logs");
-  channel.send({
-    embed: {
-      title: "Nouveau serveur!",
-      color: 0x2ecc71,
-      description: `:tada: Un nouveau serveur vient d'ajouter le bot!\n\n**Nom/ID**: ${guild.name} (${guild.id})\n**Créateur/ID**: ${guild.owner} (${guild.owner.id})`,
-      timestamp: new Date(),
-      footer: {
-        text: client.user.tag,
-        icon_url: client.botAvatar
-      }
-    }
-  });
-  setTimeout(() => {
-    client.user.setActivity(require("../../botconfig").ACTIVITY, {
-      type: "WATCHING"
+/**
+ * Event GuildCreate
+ */
+module.exports = class GuildCreate extends event {
+  /**
+   * @param {Client} client - Client
+   */
+  constructor(client) {
+    super(client, {
+      name: 'GuildCreate',
+      enable: true,
+      filename: __filename,
     });
-  }, 7 * 1000);
+    this.client = client;
+  };
+  /**
+    * Launch script
+    * @param {Guild} guild
+    * @return {Promise<Message>} message
+    */
+  async launch(guild) {
+    if (!guild) return;
+    /**
+     * Save guild data
+     */
+    await this.client.createGuild({
+      name: guild.name,
+      id: guild.id,
+      prefix: this.client.config.prefix,
+      color: this.client.config.color,
+    });
+    /**
+     * Send event
+     */
+    this.client.coreExchange.emit('guildCount',
+        await this.client.shard.fetchClientValues('guilds.cache.size')
+            .then((results) =>
+              results.reduce((prev, guildCount) => prev + guildCount, 0),
+            ));
+    /**
+     * Check bot permissions
+     */
+    if (!guild.me.hasPermission(['SEND_MESSAGES'], {
+      checkAdmin: true,
+      checkOwner: true,
+    })) {
+      return guild.owner.send(language('en', 'client_missing_permissions')
+          .replace('{{map}}', `\`SEND_MESSAGES\``)).catch(() => {});
+    };
+  };
 };

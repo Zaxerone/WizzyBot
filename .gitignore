@@ -1,7 +1,9 @@
-# npm dépendance
-/node_modules
+# node_modules
+node_modules/
 
-# environnement
-.env
-desktop.ini
-botconfig.js
+# credential
+configuration.js
+
+# env
+ecosystem.config.js
+.vscode/
